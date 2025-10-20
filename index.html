@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>🌐 Polyglot Crypto Encryptor 🔐</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg: #0b0f17;
+  --accent: #00b4d8;
+  --text: #e0e0e0;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --success: #2ecc71;
+  --error: #e74c3c;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  text-align: center;
+  margin: 0;
+  padding: 40px 15px;
+}
+
+h1 {
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+h3 {
+  color: var(--accent);
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.card {
+  background: var(--card-bg);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 180, 216, 0.3);
+}
+
+textarea {
+  width: 90%;
+  height: 120px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  padding: 12px;
+  font-size: 15px;
+  resize: none;
+}
+
+button {
+  margin-top: 15px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+button:hover {
+  background: #0077b6;
+  transform: scale(1.05);
+}
+
+pre {
+  background: #111827;
+  color: #00ff9d;
+  padding: 12px;
+  width: 90%;
+  margin: 15px auto;
+  border-radius: 10px;
+  text-align: left;
+  overflow-x: auto;
+  font-family: "Consolas", monospace;
+}
+
+.copy-btn {
+  background: none;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+.copy-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
+.loading {
+  color: var(--accent);
+  font-style: italic;
+  margin-top: 10px;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+
+footer {
+  margin-top: 40px;
+  font-size: 13px;
+  color: #aaa;
+}
+</style>
+</head>
+
+<body>
+<h1>✨ Crypto Encryptor ✨</h1>
+<p style="color:#999;">Encrypt and decrypt across multiple languages, symbols, and emojis with Bedrock AI intelligence.</p>
+
+<div class="container">
+  <!-- Encryption Card -->
+  <div class="card">
+    <h3>🔐 Encryption</h3>
+    <textarea id="plain" placeholder="Enter your text here..."></textarea><br>
+    <button onclick="encrypt()">Encrypt</button>
+    <div id="encrypt-status" class="loading" style="display:none;">Encrypting...</div>
+    <pre id="encout"></pre>
+    <button class="copy-btn" onclick="copyToClipboard('encout')">Copy Encrypted Text</button>
+  </div>
+
+  <!-- Decryption Card -->
+  <div class="card">
+    <h3>🔓 Decryption</h3>
+    <textarea id="hash" placeholder="Paste your encrypted text here..."></textarea><br>
+    <button onclick="decrypt()">Decrypt</button>
+    <div id="decrypt-status" class="loading" style="display:none;">Decrypting & contacting Bedrock LLM...</div>
+    <pre id="decout"></pre>
+    <button class="copy-btn" onclick="copyToClipboard('decout')">Copy Decrypted Text</button>
+  </div>
+</div>
+
+<footer>
+  ⚙️ Powered by AES-GCM Encryption, Multilingual Unicode Alphabet, and AWS Bedrock LLM
+</footer>
+
+<script>
+const API_BASE = "http://localhost:8000";
+
+async function encrypt() {
+  const text = document.getElementById("plain").value.trim();
+  if (!text) return alert("Please enter text to encrypt!");
+  document.getElementById("encrypt-status").style.display = "block";
+  document.getElementById("encout").textContent = "";
+
+  try {
+    const res = await fetch(API_BASE + "/encrypt", {
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: "text=" + encodeURIComponent(text)
+    });
+    const data = await res.json();
+    if (data.encrypted) {
+      document.getElementById("encout").textContent = data.encrypted;
+    } else {
+      document.getElementById("encout").textContent = "❌ " + data.error;
+    }
+  } catch (err) {
+    document.getElementById("encout").textContent = "❌ Network error: " + err;
+  }
+  document.getElementById("encrypt-status").style.display = "none";
+}
+
+async function decrypt() {
+  const hash = document.getElementById("hash").value.trim();
+  if (!hash) return alert("Please paste an encrypted hash!");
+  document.getElementById("decrypt-status").style.display = "block";
+  document.getElementById("decout").textContent = "";
+
+  try {
+    const res = await fetch(API_BASE + "/decrypt", {
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: "hash=" + encodeURIComponent(hash)
+    });
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById("decout").textContent = "❌ " + data.error;
+    } else {
+      document.getElementById("decout").textContent =
+        "📜 Decrypted Lines:\n" + data.decrypted.join("\n") +
+        "\n\n💡 Sense-Full (LLM Verified):\n" + data.sense_full.join("\n");
+    }
+  } catch (err) {
+    document.getElementById("decout").textContent = "❌ Network error: " + err;
+  }
+  document.getElementById("decrypt-status").style.display = "none";
+}
+
+function copyToClipboard(id) {
+  const text = document.getElementById(id).textContent;
+  if (!text) return alert("No text to copy!");
+  navigator.clipboard.writeText(text);
+  alert("Copied to clipboard!");
+}
+</script>
+</body>
+</html>
